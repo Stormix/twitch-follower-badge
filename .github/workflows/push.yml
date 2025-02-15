@@ -31,10 +31,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-
 
-      - uses: pnpm/action-setup@v2.2.4
+      - uses: pnpm/action-setup@latest
         name: Setup pnpm
         with:
-          version: latest
+          version: 10.4.0
           run_install: true
 
       - name: Read version from package.json
