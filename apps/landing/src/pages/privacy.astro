@@ -1,0 +1,105 @@
+---
+import { Footer } from "../components/Footer.jsx";
+import { Navbar } from "../components/Navbar.jsx";
+import { ScrollUpButton } from "../components/ScrollUpButton";
+import Layout from "../layouts/Layout.astro";
+import "../styles/Diagonals.css";
+import "../styles/Theme.css";
+---
+
+<Layout title="Privacy Policy | Twitch Follower Badge">
+  <Navbar client:load />
+  <div class="flex w-screen py-12">
+    <div
+      class="text-white flex flex-col gap-4 p-24 text-justify 2xl:w-[1280px] xl:w-10/12 w-11/12 mx-auto"
+    >
+      <h1 class="text-3xl font-bold">
+        Privacy Policy for <span class="text-twitch">Twitch Follower Badge</span> Chrome Extension
+      </h1>
+
+      <p class="italic">Last Updated: 15-02-2025</p>
+
+      <p class="">
+        Thank you for using Twitch Follower Badge, a Chrome extension that enables users to see who follows them on Twitch. 
+        This Privacy Policy is designed to inform you about the types of information we collect, how we use that
+        information, and the measures we take to protect your privacy.
+      </p>
+
+      <h2 class="text-2xl font-bold">1. Information We Collect</h2>
+
+      <p class="">Twitch Follower Badge collects the following information:</p>
+
+      <ul class="list-disc ml-6">
+        <li>
+          <strong>Twitch Username:</strong> When you connect to Twitch Follower Badge, we collect your
+          Twitch username to check follower relationships.
+        </li>
+        <li>
+          <strong>Authentication Token:</strong> A secure OAuth token from Twitch that allows us to check follower status.
+          This token is stored securely and only used to verify follower relationships.
+        </li>
+      </ul>
+
+      <h2 class="text-2xl font-bold">2. Data Usage</h2>
+
+      <p class="">
+        We take privacy seriously, and as such, we ensure the following:
+      </p>
+
+      <ul class="list-disc ml-6">
+        <li>
+          <strong>Minimal Data Collection:</strong> We only collect the data necessary to provide the follower badge functionality.
+        </li>
+        <li>
+          <strong>No Data Storage:</strong> Follower information is fetched in real-time and is not stored on our servers.
+        </li>
+      </ul>
+
+      <h2 class="text-2xl font-bold">3. Information Sharing</h2>
+
+      <p class="">
+        We do not share your personal information with third parties. Your
+        Twitch authentication token and follower data are used solely for the operation of the
+        extension and are not disclosed to external entities.
+      </p>
+
+      <h2 class="text-2xl font-bold">4. Security Measures</h2>
+
+      <p class="">
+        We employ industry-standard security measures to protect your
+        information, including secure OAuth authentication through Twitch's official API.
+      </p>
+
+      <h2 class="text-2xl font-bold">
+        5. Updates and Changes to Privacy Policy
+      </h2>
+
+      <p class="">
+        We may update this Privacy Policy to reflect changes in our practices or
+        for other operational, legal, or regulatory reasons. It is your
+        responsibility to review this policy periodically.
+      </p>
+
+      <h2 class="text-2xl font-bold">6. Contact Information</h2>
+
+      <p class="">
+        If you have any questions or concerns about this Privacy Policy or the
+        privacy practices of Twitch Follower Badge, please contact us at <a
+          href="mailto:hello@stormix.co"
+          class="text-twitch hover:underline"
+        >
+          hello@stormix.co
+        </a>
+        .
+      </p>
+
+      <p class="">
+        By using the Twitch Follower Badge Chrome extension, you agree to the terms outlined in
+        this Privacy Policy. Please discontinue use if you do not agree with
+        these terms.
+      </p>
+    </div>
+  </div>
+  <Footer />
+  <ScrollUpButton client:load />
+</Layout>

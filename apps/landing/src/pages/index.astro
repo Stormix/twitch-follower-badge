@@ -1,0 +1,19 @@
+---
+import { FAQ } from "../components/FAQ.jsx";
+import { Footer } from "../components/Footer.jsx";
+import { Hero } from "../components/Hero.jsx";
+import { Navbar } from "../components/Navbar.jsx";
+import { ScrollUpButton } from "../components/ScrollUpButton";
+import Layout from "../layouts/Layout.astro";
+import "../styles/Diagonals.css";
+import "../styles/Theme.css";
+
+---
+
+<Layout title="Twitch Follower Badge - See Who Follows You">
+  <Navbar client:load />
+  <Hero client:load />
+  <FAQ client:load />
+  <Footer />
+  <ScrollUpButton client:load />
+</Layout>

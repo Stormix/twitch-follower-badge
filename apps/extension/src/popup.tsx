@@ -30,11 +30,14 @@ function IndexPopup() {
   }
 
   return (
-    <div className="flex flex-col w-full h-full p-8 bg-twitch-background text-white">
+    <div className="flex flex-col w-[300px] h-full p-8 bg-twitch-background text-white">
     {user ? (
-      <div className="flex flex-col items-center justify-center w-full h-full text-xl">
-        Hello <span className="text-twitch">{user?.login}</span>
-        <button className="hover:text-red-400" onClick={logout}>
+      <div className="flex flex-col justify-center text-xl gap-2">
+        <h1 className="text-2xl font-bold">Twitch Follower Badge</h1>
+        <hr />
+        <p>Hello <span className="text-twitch">{user?.login}</span>, you're logged in.</p>
+        <p className="text-sm text-gray-400">It might take a few seconds to load your <span className="line-through">bots</span>, I mean followers.</p>
+        <button className="hover:text-red-400 text-sm" onClick={logout}>
           Logout ?
         </button>
       </div>
