@@ -1,0 +1,18 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		}
+	],
+	"settings": {
+		"debug.javascript.defaultRuntimeExecutable": {
+			"pwa-node": "c:\\users\\stormix\\appdata\\local\\mise\\shims\\node"
+		},
+		"editor.codeActionsOnSave": {
+			"source.organizeImports": "always",
+			"source.fixAll": "always",
+			"source.addMissingImports.ts": "always"
+		},
+		"editor.formatOnSave": false
+	}
+}
