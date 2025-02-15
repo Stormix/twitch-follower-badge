@@ -32,7 +32,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-
 
-      - uses: pnpm/action-setup
+      - uses: pnpm/action-setup@v4
         name: Setup pnpm
         with:
           version: 10.4.0
