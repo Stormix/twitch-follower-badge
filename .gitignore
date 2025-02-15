@@ -34,3 +34,4 @@ coverage/
 # Ignore actual configuration files
 **/config/*.toml
 !**/config/*.example.toml
+key.pem
