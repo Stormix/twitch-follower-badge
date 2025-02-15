@@ -1,16 +1,29 @@
 version: '3.8'
 
 services:
-  mongodb:
-    image: mongo:latest
-    container_name: mongodb
+  server:
+    build:
+      context: .
+      dockerfile: apps/server/Dockerfile
+    container_name: twitch-stalker-server
     ports:
-      - "27017:27017"
+      - "3000:3000"
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=admin
-      - MONGO_INITDB_ROOT_PASSWORD=password123
+      - PORT=3000
+      - NODE_ENV=production
+      - REDIS_URL=redis://redis:6379
+    env_file:
+      - ./apps/server/.env
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:alpine
+    container_name: twitch-stalker-redis
+    ports:
+      - "6379:6379"
     volumes:
-      - mongodb_data:/data/db
+      - redis_data:/data
 
 volumes:
-  mongodb_data:
+  redis_data:

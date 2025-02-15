@@ -6,8 +6,9 @@
 		"lint": "turbo run lint --parallel",
 		"format": "turbo run format --parallel",
 		"extension:dev": "pnpm --filter @twitch-stalker/extension dev",
-		"db:up": "docker compose up -d",
-		"db:down": "docker compose down"
+		"docker:up": "docker compose up --build",
+		"docker:build": "docker compose build",
+		"docker:down": "docker compose down"
 	},
 	"devDependencies": {
 		"cross-env": "^7.0.3",
