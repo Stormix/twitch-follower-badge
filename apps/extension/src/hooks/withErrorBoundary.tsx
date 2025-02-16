@@ -1,43 +1,44 @@
-import scope from '@/instrument';
-import { Component, type ComponentType, type ReactElement } from 'react';
+import scope from "@/instrument"
+import { Component, type ComponentType, type ReactElement } from "react"
+
 class ErrorBoundary extends Component<
   {
-    children: ReactElement;
-    fallback: ReactElement;
+    children: ReactElement
+    fallback: ReactElement
   },
   {
-    hasError: boolean;
+    hasError: boolean
   }
 > {
-  state = { hasError: false };
+  state = { hasError: false }
 
   static getDerivedStateFromError() {
-    return { hasError: true };
+    return { hasError: true }
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error(error, errorInfo);
+    console.error(error, errorInfo)
     scope.captureException(error)
   }
 
   render() {
     if (this.state.hasError) {
-      return this.props.fallback;
+      return this.props.fallback
     }
 
-    return this.props.children;
+    return this.props.children
   }
 }
 
 export default function withErrorBoundary<T extends Record<string, unknown>>(
   Component: ComponentType<T>,
-  ErrorComponent: ReactElement,
+  ErrorComponent: ReactElement
 ) {
   return function WithErrorBoundary(props: T) {
     return (
       <ErrorBoundary fallback={ErrorComponent}>
         <Component {...props} />
       </ErrorBoundary>
-    );
-  };
+    )
+  }
 }

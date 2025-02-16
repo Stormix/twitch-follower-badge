@@ -1,3 +1,3 @@
-export const BACKEND_URL = process.env.PLASMO_PUBLIC_BACKEND_URL;
-export const TWITCH_CLIENT_ID = process.env.PLASMO_PUBLIC_TWITCH_CLIENT_ID;
-export const EXTENSION_ID = process.env.PLASMO_PUBLIC_EXTENSION_ID;
+export const BACKEND_URL = process.env.PLASMO_PUBLIC_BACKEND_URL
+export const TWITCH_CLIENT_ID = process.env.PLASMO_PUBLIC_TWITCH_CLIENT_ID
+export const EXTENSION_ID = process.env.PLASMO_PUBLIC_EXTENSION_ID

@@ -1,6 +1,10 @@
-import type { RequestBody, ResponseBody } from "@/background/messages/user-checker"
-import { sendToBackground } from "@plasmohq/messaging"
+import type {
+  RequestBody,
+  ResponseBody
+} from "@/background/messages/user-checker"
 import { useEffect, useState } from "react"
+
+import { sendToBackground } from "@plasmohq/messaging"
 
 const useFollowsYou = (username: string | null) => {
   const [response, setResponse] = useState<ResponseBody | null>(null)
@@ -17,8 +21,8 @@ const useFollowsYou = (username: string | null) => {
     })
   }, [])
 
-
   return {
+    success: response?.success,
     isFollower: response?.isFollower,
     followingSince: response?.followingSince
   }

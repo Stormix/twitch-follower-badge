@@ -5,33 +5,44 @@ import type { PlasmoCSConfig, PlasmoGetInlineAnchorList } from "plasmo"
 
 let selectedUser: string | null = null
 
-export const getStreamInfoAnchor = ()=> {
-  const streamInfoAnchor =  {
+export const getStreamInfoAnchor = () => {
+  const streamInfoAnchor = {
     element: document.querySelector(
       "div.metadata-layout__support > div > div > div" // TODO: improve
     ),
     insertPosition: "afterend" as const
   }
-  const name = (document.querySelector("div.metadata-layout__support a") as HTMLAnchorElement | null)?.href?.split("/")?.pop() ?? null
+  const name =
+    (
+      document.querySelector(
+        "div.metadata-layout__support a"
+      ) as HTMLAnchorElement | null
+    )?.href
+      ?.split("/")
+      ?.pop() ?? null
 
-  return {anchor: streamInfoAnchor, name}
+  return { anchor: streamInfoAnchor, name }
 }
 
-export const getOfflineAnchor = ()=> { 
-  const element= document.querySelector(
-    "div.home-header-sticky > div > div > div:nth-child(2)"  
+export const getOfflineAnchor = () => {
+  const element = document.querySelector(
+    "div.home-header-sticky > div > div > div:nth-child(2)"
   )
   const offlineAnchor = {
     element: element,
     insertPosition: "afterend" as const
   }
-  const name = (element?.querySelector("a") as HTMLAnchorElement | null)?.href?.split("/")?.pop() ?? null
-  return {anchor: offlineAnchor, name}
+  const name =
+    (element?.querySelector("a") as HTMLAnchorElement | null)?.href
+      ?.split("/")
+      ?.pop() ?? null
+  return { anchor: offlineAnchor, name }
 }
 
 export const getInlineAnchorList: PlasmoGetInlineAnchorList = async () => {
-  const {anchor: streamInfoAnchor, name: streamInfoName} = getStreamInfoAnchor()
-  const {anchor: offlineAnchor, name: offlineName} = getOfflineAnchor()
+  const { anchor: streamInfoAnchor, name: streamInfoName } =
+    getStreamInfoAnchor()
+  const { anchor: offlineAnchor, name: offlineName } = getOfflineAnchor()
 
   if (streamInfoName) {
     selectedUser = streamInfoName
@@ -40,10 +51,7 @@ export const getInlineAnchorList: PlasmoGetInlineAnchorList = async () => {
     selectedUser = offlineName
   }
 
-  return [
-    streamInfoAnchor,
-    offlineAnchor
-  ]
+  return [streamInfoAnchor, offlineAnchor]
 }
 
 export const getStyle = () => {
@@ -58,6 +66,7 @@ export const config: PlasmoCSConfig = {
 }
 
 export default function CardInfo() {
-  const { isFollower , followingSince  } = useFollowsYou(selectedUser)  
+  const { isFollower, followingSince, success } = useFollowsYou(selectedUser)
+  if (!success) return null
   return <Badge isFollower={isFollower} followingSince={followingSince} />
 }

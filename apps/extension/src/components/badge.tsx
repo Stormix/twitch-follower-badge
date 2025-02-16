@@ -1,11 +1,12 @@
-import { storage } from "@/lib/storage";
-import { useStorage } from "@plasmohq/storage/hook";
-import { format } from "date-fns";
-import { Tooltip } from "radix-ui";
+import { storage } from "@/lib/storage"
+import { format } from "date-fns"
+import { Tooltip } from "radix-ui"
+
+import { useStorage } from "@plasmohq/storage/hook"
 
 const Badge = ({
   isFollower,
-  followingSince,
+  followingSince
 }: {
   isFollower: boolean
   followingSince: Date
@@ -20,12 +21,14 @@ const Badge = ({
       <Tooltip.Root>
         <Tooltip.Trigger>
           <div className="bg-zinc-800 text-white/50 py-1/2 px-2 rounded-md ml-2">
-            {isFollower ? 'Follows you' : ''}
-            {!isFollower && showIfNotFollower ? 'Not a fan' : ''}
+            {isFollower ? "Follows you" : ""}
+            {!isFollower && showIfNotFollower ? "Not a fan" : ""}
           </div>
         </Tooltip.Trigger>
         <Tooltip.Content className="bg-black/95 text-white p-1 rounded-md mb-4">
-          {isFollower ? `Follows you since ${format(followingSince, "MMMM d, yyyy")}` : 'Not a fan'}
+          {isFollower
+            ? `Follows you since ${format(followingSince, "MMMM d, yyyy")}`
+            : "Not a fan"}
         </Tooltip.Content>
       </Tooltip.Root>
     </Tooltip.Provider>

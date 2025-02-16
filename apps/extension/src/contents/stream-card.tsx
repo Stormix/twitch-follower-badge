@@ -4,12 +4,13 @@ import cssText from "data-text:@/style.css"
 import type { PlasmoCSConfig, PlasmoGetInlineAnchorList } from "plasmo"
 import { useMemo } from "react"
 
-let selectedUser: string | null = null
-
+const selectedUser: string | null = null
 
 export const getInlineAnchorList: PlasmoGetInlineAnchorList = async () => {
-  const anchors = document.querySelectorAll("a.preview-card-channel-link > div p")
-  return Array.from(anchors).map(anchor => ({
+  const anchors = document.querySelectorAll(
+    "a.preview-card-channel-link > div p"
+  )
+  return Array.from(anchors).map((anchor) => ({
     element: anchor,
     insertPosition: "afterend" as const
   }))
@@ -26,14 +27,13 @@ export const config: PlasmoCSConfig = {
   all_frames: true
 }
 
-export default function CardInfo({
-  anchor
-}) {
+export default function CardInfo({ anchor }) {
   const name = useMemo(() => {
     const element = anchor.element as HTMLAnchorElement
     return element?.textContent?.trim()?.toLowerCase()
   }, [anchor.element])
-  
-  const { isFollower , followingSince  } = useFollowsYou(name)  
+
+  const { isFollower, followingSince, success } = useFollowsYou(name)
+  if (!success) return null
   return <Badge isFollower={isFollower} followingSince={followingSince} />
 }

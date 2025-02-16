@@ -1,8 +1,8 @@
 export interface TwitchOAuthValidResponse {
-  client_id: string;
-  login: string;
-  scopes: string[];
-  user_id: string;
-  expires_in: number;
-  color?: string;
+  client_id: string
+  login: string
+  scopes: string[]
+  user_id: string
+  expires_in: number
+  color?: string
 }
