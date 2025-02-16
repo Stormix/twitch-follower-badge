@@ -1,3 +1,4 @@
+import Badge from "@/components/badge"
 import useFollowsYou from "@/hooks/use-follows-you"
 import cssText from "data-text:@/style.css"
 import type { PlasmoCSConfig, PlasmoGetInlineAnchorList } from "plasmo"
@@ -57,7 +58,6 @@ export const config: PlasmoCSConfig = {
 }
 
 export default function CardInfo() {
-  const { isFollower: followsYou, followingSince: followDate } = useFollowsYou(selectedUser)  
-  if (!followsYou) return null
-  return <div className="bg-zinc-800 text-white/50 py-1/2 px-2 rounded-md ml-2">Follows you</div>
+  const { isFollower , followingSince  } = useFollowsYou(selectedUser)  
+  return <Badge isFollower={isFollower} followingSince={followingSince} />
 }

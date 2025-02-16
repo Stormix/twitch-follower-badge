@@ -11,8 +11,10 @@
 		"editor.codeActionsOnSave": {
 			"source.organizeImports": "always",
 			"source.fixAll": "always",
+			"source.fixAll.eslint": "always",
 			"source.addMissingImports.ts": "always"
 		},
-		"editor.formatOnSave": false
+		"editor.formatOnSave": false,
+		"typescript.tsdk": "node_modules\\typescript\\lib"
 	}
 }

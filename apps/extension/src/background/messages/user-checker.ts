@@ -1,11 +1,11 @@
+import { getApi } from "@/lib/api"
 import { logger } from "@/lib/logger"
-import { storage } from "@/lib/storage"
 import type { PlasmoMessaging } from "@plasmohq/messaging"
 
 export type RequestBody = {
   username: string
 }
- 
+
 export type ResponseBody = {
   isFollower: boolean
   followingSince: Date
@@ -14,23 +14,20 @@ export type ResponseBody = {
 const handler: PlasmoMessaging.MessageHandler<RequestBody, ResponseBody> = async (req, res) => {
   logger.info(`Looking for ${req.body.username}`)
 
-  const response = await fetch(`${process.env.PLASMO_PUBLIC_BACKEND_URL}/api/followers/check`, {
-    method: 'POST',
-    body: JSON.stringify({ username: req.body.username }),
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${await storage.get('access_token')}`
-    },
+  const api = await getApi()
+  const response = await api.post<{
+    isFollower: boolean
+    followingSince: Date
+  }>('/followers/check', {
+    username: req.body.username,
   })
 
-  const data = await response.json()
-
-  logger.info(`${req.body.username} is ${data.isFollower ? 'a' : 'not a'} fan :)`)
+  logger.info(`${req.body.username} is ${response.data.isFollower ? 'a' : 'not a'} fan :)`)
 
   res.send({
-    isFollower: data.isFollower,
-    followingSince: data.followingSince
+    isFollower: response.data.isFollower,
+    followingSince: response.data.followingSince
   })
 }
- 
+
 export default handler

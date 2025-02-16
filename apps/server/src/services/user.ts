@@ -3,7 +3,7 @@ import db from '@/lib/db';
 import { followersTable, usersTable, type User } from '@/lib/db/schema';
 import { queueSyncJob } from '@/lib/queues';
 import type { CheckFollower, UserLogin } from '@/lib/validation';
-import type { JwtPayload } from '@/types/jwt';
+import type { JwtPayload, JwtPayloadJSON } from '@/types/jwt';
 import { getService } from '@/utils/services';
 import { parseDuration } from '@/utils/time';
 import { and, eq } from 'drizzle-orm';
@@ -113,22 +113,15 @@ export class UserService {
     return user[0];
   }
 
-  async refreshToken(refreshToken: string) {
-    const decoded = await verify(refreshToken, env.JWT_SECRET);
-    if (!decoded.userId) {
-      throw new Error('Invalid refresh token');
-    }
-    const userId = parseInt(decoded.userId as string);
+  async refreshToken(jwtPayload: JwtPayloadJSON) {
+    const userId = jwtPayload.userId;
     const user = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
 
     if (user.length === 0) {
       throw new Error('User not found');
     }
 
-    return {
-      ...this.generateTokens(user[0]),
-      refreshToken: refreshToken,
-    };
+    return this.generateTokens(user[0]);
   }
 
   async checkFollower({
