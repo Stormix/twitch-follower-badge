@@ -67,7 +67,6 @@ const FollowIcon = () => {
 export default function FollowText() {
   const { isFollower: followsYou, followingSince: followDate } = useFollowsYou(selectedUser)
   if (!followsYou) return null
-  
   return <div className="flex mt-0.5 items-center gap-2 text-white font-inter font-feature-default antialiased">
     <FollowIcon />
     <div className="text-[13px] leading-6">Follows you since {format(followDate, "MMMM d, yyyy")}</div>
