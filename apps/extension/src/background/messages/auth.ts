@@ -1,3 +1,4 @@
+import scope from "@/instrument"
 import { authenticateUsingTwitch } from "@/lib/auth"
 import { logger } from "@/lib/logger"
 import { storage } from "@/lib/storage"
@@ -50,9 +51,10 @@ const logout = async () => {
 }
 
 const handler: PlasmoMessaging.MessageHandler<RequestBody, ResponseBody> = async (req, res) => {
-  switch (req.body.action) {
-    case "login":{
-      res.send(await login())
+  try {
+    switch (req.body.action) {
+      case "login":{
+        res.send(await login())
       break
     }
     case "logout":{
@@ -61,6 +63,13 @@ const handler: PlasmoMessaging.MessageHandler<RequestBody, ResponseBody> = async
     }
     default:
       throw new Error('Invalid action')
+  }
+  } catch (error) {
+    logger.error('Failed to handle auth action', error)
+    scope.captureException(error)
+    res.send({
+      success: false,
+    })
   }
 }
  

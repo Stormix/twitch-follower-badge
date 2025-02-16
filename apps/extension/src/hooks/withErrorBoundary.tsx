@@ -1,5 +1,5 @@
+import scope from '@/instrument';
 import { Component, type ComponentType, type ReactElement } from 'react';
-
 class ErrorBoundary extends Component<
   {
     children: ReactElement;
@@ -17,6 +17,7 @@ class ErrorBoundary extends Component<
 
   componentDidCatch(error, errorInfo) {
     console.error(error, errorInfo);
+    scope.captureException(error)
   }
 
   render() {

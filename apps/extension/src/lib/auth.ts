@@ -1,3 +1,4 @@
+import scope from '@/instrument';
 import { type TwitchOAuthValidResponse } from '../types/twitch';
 import { EXTENSION_ID, TWITCH_CLIENT_ID } from './config';
 import { logger } from './logger';
@@ -85,6 +86,7 @@ export const authenticateUsingTwitch = () => {
         const error = chrome.runtime.lastError;
         if (error || !redirect_url || redirect_url.includes('error=access_denied')) {
           reject(error || 'Authentication failed');
+          scope.captureException(error || 'Authentication failed');
           return;
         }
 

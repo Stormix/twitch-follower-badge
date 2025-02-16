@@ -1,3 +1,4 @@
+import scope from "@/instrument"
 import { getApi } from "@/lib/api"
 import { logger } from "@/lib/logger"
 import type { PlasmoMessaging } from "@plasmohq/messaging"
@@ -12,7 +13,8 @@ export type ResponseBody = {
 }
 
 const handler: PlasmoMessaging.MessageHandler<RequestBody, ResponseBody> = async (req, res) => {
-  logger.info(`Looking for ${req.body.username}`)
+  try {
+    logger.info(`Looking for ${req.body.username}`)
 
   const api = await getApi()
   const response = await api.post<{
@@ -25,9 +27,16 @@ const handler: PlasmoMessaging.MessageHandler<RequestBody, ResponseBody> = async
   logger.info(`${req.body.username} is ${response.data.isFollower ? 'a' : 'not a'} fan :)`)
 
   res.send({
-    isFollower: response.data.isFollower,
-    followingSince: response.data.followingSince
-  })
+      isFollower: response.data.isFollower,
+      followingSince: response.data.followingSince
+    })
+  } catch (error) {
+    logger.error('Failed to check user', error)
+    scope.captureException(error)
+    res.send({
+      isFollower: false,
+      followingSince: null
+    })
+  }
 }
-
 export default handler
