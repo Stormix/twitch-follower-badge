@@ -4,8 +4,6 @@ import cssText from "data-text:@/style.css"
 import type { PlasmoCSConfig, PlasmoGetInlineAnchorList } from "plasmo"
 import { useMemo } from "react"
 
-const selectedUser: string | null = null
-
 export const getInlineAnchorList: PlasmoGetInlineAnchorList = async () => {
   const anchor = document.querySelector(
     "div.streamer-card__balloon > div > div > div > div > div > div >div:nth-child(2) > div > div:nth-child(2) > div"

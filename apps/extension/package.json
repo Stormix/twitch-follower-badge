@@ -1,7 +1,7 @@
 {
   "name": "@twitch-stalker/extension",
   "displayName": "Twitch Follower Badge",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "An extension that allows you to see if someone follows you on twitch right on their profile.",
   "author": "Stormix <hello@stormix.dev>",
   "scripts": {

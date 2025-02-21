@@ -1,5 +1,5 @@
+import { formatDate } from "@/lib/date"
 import { storage } from "@/lib/storage"
-import { format } from "date-fns"
 import { Tooltip } from "radix-ui"
 
 import { useStorage } from "@plasmohq/storage/hook"
@@ -15,6 +15,7 @@ const Badge = ({
     key: "showBadgeForNonFollowers",
     instance: storage
   })
+
   if (!isFollower && !showIfNotFollower) return null
   return (
     <Tooltip.Provider delayDuration={800} skipDelayDuration={500}>
@@ -27,7 +28,7 @@ const Badge = ({
         </Tooltip.Trigger>
         <Tooltip.Content className="bg-black/95 text-white p-1 rounded-md mb-4">
           {isFollower
-            ? `Follows you since ${format(followingSince, "MMMM d, yyyy")}`
+            ? `Follows you since ${formatDate(followingSince)}`
             : "Not a fan"}
         </Tooltip.Content>
       </Tooltip.Root>

@@ -1,6 +1,6 @@
 import useFollowsYou from "@/hooks/use-follows-you"
+import { formatDate } from "@/lib/date"
 import cssText from "data-text:@/style.css"
-import { format } from "date-fns"
 import type { PlasmoCSConfig, PlasmoGetInlineAnchorList } from "plasmo"
 
 let selectedUser: string | null = null
@@ -83,12 +83,14 @@ export default function FollowText() {
     followingSince: followDate,
     success
   } = useFollowsYou(selectedUser)
-  if (!followsYou || !success) return null
+  if (!success) return null
   return (
     <div className="flex mt-0.5 items-center gap-2 text-white font-inter font-feature-default antialiased">
       <FollowIcon />
       <div className="text-[13px] leading-6">
-        Follows you since {format(followDate, "MMMM d, yyyy")}
+        {followsYou
+          ? "Follows you since " + formatDate(followDate)
+          : "Doesn't follow you, ha9oud, unfollowih."}
       </div>
     </div>
   )
