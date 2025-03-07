@@ -63,6 +63,45 @@ export class TwitchService {
     }
   }
 
+  async *getVIPs(userId: number) {
+    try {
+      const user = await userService.get(userId);
+      const apiClient = await this.getClient(userId);
+
+      for await (const vip of apiClient.channels.getVipsPaginated(user.twitchId)) {
+        yield vip;
+      }
+    } catch (error) {
+      this.logger.error(error);
+    }
+  }
+
+  async *getModerators(userId: number) {
+    try {
+      const user = await userService.get(userId);
+      const apiClient = await this.getClient(userId);
+
+      for await (const moderator of apiClient.moderation.getModeratorsPaginated(user.twitchId)) {
+        yield moderator;
+      }
+    } catch (error) {
+      this.logger.error(error);
+    }
+  }
+
+  async *getSubscribers(userId: number) {
+    try {
+      const user = await userService.get(userId);
+      const apiClient = await this.getClient(userId);
+
+      for await (const subscriber of apiClient.subscriptions.getSubscriptionsPaginated(user.twitchId)) {
+        yield subscriber;
+      }
+    } catch (error) {
+      this.logger.error(error);
+    }
+  }
+
   async getFollowersCount(userId: number) {
     const user = await userService.get(userId);
     const apiClient = await this.getClient(userId);

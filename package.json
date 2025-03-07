@@ -6,6 +6,7 @@
 		"lint": "turbo run lint --parallel",
 		"format": "turbo run format --parallel",
 		"extension:dev": "pnpm --filter @twitch-stalker/extension dev",
+		"server:dev": "pnpm --filter @twitch-stalker/server dev",
 		"docker:up": "docker compose up --build",
 		"docker:build": "docker compose build",
 		"docker:down": "docker compose down"

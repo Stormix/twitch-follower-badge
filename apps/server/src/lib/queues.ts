@@ -1,5 +1,5 @@
 import env from '@/env';
-import { syncFollowers } from '@/jobs/sync';
+import { syncAllModerators, syncAllSubscribers, syncAllVips, syncFollowers } from '@/jobs/sync';
 import Queue from 'bee-queue';
 import { Cron } from 'croner';
 import { Logger } from 'tslog';
@@ -22,7 +22,11 @@ export const synchronizationQueue = new Queue<SyncFollowersJob>('synchronization
 
 void synchronizationQueue.process(async (job) => {
   const { userId } = job.data;
+
   await syncFollowers(userId);
+  await syncAllSubscribers(userId);
+  await syncAllVips(userId);
+  await syncAllModerators(userId);
 });
 
 synchronizationQueue.on('error', (error) => {
