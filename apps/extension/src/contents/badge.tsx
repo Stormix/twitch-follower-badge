@@ -29,14 +29,20 @@ export const getStreamInfoAnchor = () => {
 
 export const getOfflineAnchor = () => {
   const element = document.querySelector(
-    "div.home-header-sticky > div > div > div:nth-child(2)"
+    "div.home-header-sticky > div > div > div:nth-child(2) > a > div > h1"
   )
+
   const offlineAnchor = {
     element: element,
     insertPosition: "afterend" as const
   }
+
   const rawName =
-    (element?.querySelector("a") as HTMLAnchorElement | null)?.href
+    (
+      document.querySelector(
+        "div.home-header-sticky > div > div > div:nth-child(2) > a"
+      ) as HTMLAnchorElement | null
+    )?.href
       ?.split("/")
       ?.pop() ?? null
 
