@@ -12,7 +12,7 @@ export const getStreamInfoAnchor = () => {
     ),
     insertPosition: "afterend" as const
   }
-  const name =
+  const rawName =
     (
       document.querySelector(
         "div.metadata-layout__support a"
@@ -20,6 +20,9 @@ export const getStreamInfoAnchor = () => {
     )?.href
       ?.split("/")
       ?.pop() ?? null
+
+  // Extract the first part of the username if it contains spaces
+  const name = rawName ? rawName.split(" ")[0] : null
 
   return { anchor: streamInfoAnchor, name }
 }
@@ -32,10 +35,14 @@ export const getOfflineAnchor = () => {
     element: element,
     insertPosition: "afterend" as const
   }
-  const name =
+  const rawName =
     (element?.querySelector("a") as HTMLAnchorElement | null)?.href
       ?.split("/")
       ?.pop() ?? null
+
+  // Extract the first part of the username if it contains spaces
+  const name = rawName ? rawName.split(" ")[0] : null
+
   return { anchor: offlineAnchor, name }
 }
 
@@ -66,7 +73,22 @@ export const config: PlasmoCSConfig = {
 }
 
 export default function CardInfo() {
-  const { isFollower, followingSince, success } = useFollowsYou(selectedUser)
+  const {
+    isFollower,
+    isSubscriber,
+    isVIP,
+    isModerator,
+    followingSince,
+    success
+  } = useFollowsYou(selectedUser)
   if (!success) return null
-  return <Badge isFollower={isFollower} followingSince={followingSince} />
+  return (
+    <Badge
+      isFollower={isFollower}
+      isSubscriber={isSubscriber}
+      isVIP={isVIP}
+      isModerator={isModerator}
+      followingSince={followingSince}
+    />
+  )
 }

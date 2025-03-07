@@ -30,14 +30,27 @@ export const config: PlasmoCSConfig = {
 export default function CardInfo({ anchor }) {
   const name = useMemo(() => {
     const element = anchor.element.querySelector("a") as HTMLAnchorElement
-    return element?.textContent?.trim()?.toLowerCase()
+    const rawName = element?.textContent?.trim()?.toLowerCase() || ""
+    // Extract the first part of the username if it contains spaces
+    return rawName.split(" ")[0]
   }, [anchor.element])
 
   const {
     isFollower: followsYou,
+    isSubscriber,
+    isVIP,
+    isModerator,
     followingSince: followDate,
     success
   } = useFollowsYou(name)
   if (!success) return null
-  return <Badge isFollower={followsYou} followingSince={followDate} />
+  return (
+    <Badge
+      isFollower={followsYou}
+      isSubscriber={isSubscriber}
+      isVIP={isVIP}
+      isModerator={isModerator}
+      followingSince={followDate}
+    />
+  )
 }

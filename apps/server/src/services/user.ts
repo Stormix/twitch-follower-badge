@@ -1,12 +1,12 @@
 import env from '@/env';
 import db from '@/lib/db';
-import { followersTable, usersTable, type User } from '@/lib/db/schema';
+import { followersTable, moderatorsTable, subscribersTable, usersTable, vipsTable, type User } from '@/lib/db/schema';
 import { queueSyncJob } from '@/lib/queues';
 import type { CheckFollower, UserLogin } from '@/lib/validation';
 import type { JwtPayload, JwtPayloadJSON } from '@/types/jwt';
 import { getService } from '@/utils/services';
 import { parseDuration } from '@/utils/time';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, isNull } from 'drizzle-orm';
 import { sign, verify } from 'hono/jwt';
 import { twitchService } from './twitch';
 
@@ -131,35 +131,89 @@ export class UserService {
     userId: number;
   }): Promise<{
     isFollower: boolean;
+    isSubscriber: boolean;
+    isVIP: boolean;
+    isModerator: boolean;
     followingSince: Date;
   }> {
     try {
+      // Extract the first part of the username if it contains spaces
+      const cleanUsername = username.split(' ')[0].toLowerCase();
+
       const user = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
       if (user.length === 0) {
         throw new Error('User not found');
       }
 
+      // Check if user is a follower
       const follower = await db
         .select()
         .from(followersTable)
-        .where(and(eq(followersTable.followerName, username.toLowerCase()), eq(followersTable.userId, userId)))
+        .where(
+          and(
+            eq(followersTable.followerName, cleanUsername),
+            eq(followersTable.userId, userId),
+            isNull(followersTable.unfollowedAt),
+          ),
+        )
         .limit(1);
 
-      if (follower.length === 0) {
-        return {
-          isFollower: false,
-          followingSince: new Date(),
-        };
-      }
+      const isFollower = follower.length > 0;
+      const followingSince = isFollower ? follower[0].followingSince : new Date();
+
+      // Check if user is a subscriber from the database
+      const subscriber = await db
+        .select()
+        .from(subscribersTable)
+        .where(
+          and(
+            eq(subscribersTable.subscriberName, cleanUsername),
+            eq(subscribersTable.userId, userId),
+            isNull(subscribersTable.unsubscribedAt),
+          ),
+        )
+        .limit(1);
+
+      const isSubscriber = subscriber.length > 0;
+
+      // Check if user is a VIP from the database
+      const vip = await db
+        .select()
+        .from(vipsTable)
+        .where(and(eq(vipsTable.vipName, cleanUsername), eq(vipsTable.userId, userId), isNull(vipsTable.removedAt)))
+        .limit(1);
+
+      const isVIP = vip.length > 0;
+
+      // Check if user is a moderator from the database
+      const moderator = await db
+        .select()
+        .from(moderatorsTable)
+        .where(
+          and(
+            eq(moderatorsTable.moderatorName, cleanUsername),
+            eq(moderatorsTable.userId, userId),
+            isNull(moderatorsTable.removedAt),
+          ),
+        )
+        .limit(1);
+
+      const isModerator = moderator.length > 0;
 
       return {
-        isFollower: true,
-        followingSince: follower[0].followingSince,
+        isFollower,
+        isSubscriber,
+        isVIP,
+        isModerator,
+        followingSince,
       };
     } catch (error) {
       console.error(error);
       return {
         isFollower: false,
+        isSubscriber: false,
+        isVIP: false,
+        isModerator: false,
         followingSince: new Date(),
       };
     }

@@ -11,10 +11,14 @@ const useFollowsYou = (username: string | null) => {
 
   useEffect(() => {
     if (!username) return
+
+    // Extract the first part of the username if it contains spaces
+    const cleanUsername = username.split(" ")[0]
+
     sendToBackground<RequestBody, ResponseBody>({
       name: "user-checker",
       body: {
-        username
+        username: cleanUsername
       }
     }).then((res) => {
       setResponse(res)
@@ -24,6 +28,9 @@ const useFollowsYou = (username: string | null) => {
   return {
     success: response?.success,
     isFollower: response?.isFollower,
+    isSubscriber: response?.isSubscriber,
+    isVIP: response?.isVIP,
+    isModerator: response?.isModerator,
     followingSince: response?.followingSince
   }
 }

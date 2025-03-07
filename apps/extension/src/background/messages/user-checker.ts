@@ -11,6 +11,9 @@ export type RequestBody = {
 export type ResponseBody = {
   success: boolean
   isFollower: boolean
+  isSubscriber: boolean
+  isVIP: boolean
+  isModerator: boolean
   followingSince: Date
 }
 
@@ -24,6 +27,9 @@ const handler: PlasmoMessaging.MessageHandler<
     const api = await getApi()
     const response = await api.post<{
       isFollower: boolean
+      isSubscriber: boolean
+      isVIP: boolean
+      isModerator: boolean
       followingSince: Date
     }>("/followers/check", {
       username: req.body.username
@@ -33,9 +39,24 @@ const handler: PlasmoMessaging.MessageHandler<
       `${req.body.username} is ${response.data.isFollower ? "a" : "not a"} fan :)`
     )
 
+    if (response.data.isSubscriber) {
+      logger.info(`${req.body.username} is a subscriber!`)
+    }
+
+    if (response.data.isVIP) {
+      logger.info(`${req.body.username} is a VIP!`)
+    }
+
+    if (response.data.isModerator) {
+      logger.info(`${req.body.username} is a moderator!`)
+    }
+
     res.send({
       success: true,
       isFollower: response.data.isFollower,
+      isSubscriber: response.data.isSubscriber,
+      isVIP: response.data.isVIP,
+      isModerator: response.data.isModerator,
       followingSince: response.data.followingSince
     })
   } catch (error) {
@@ -44,6 +65,9 @@ const handler: PlasmoMessaging.MessageHandler<
     res.send({
       success: false,
       isFollower: false,
+      isSubscriber: false,
+      isVIP: false,
+      isModerator: false,
       followingSince: null
     })
   }
