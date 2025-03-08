@@ -9,6 +9,44 @@ import { TwitchService } from '../services/twitch';
 
 const logger = mainLogger.getSubLogger({ name: 'syncJob' });
 
+// Add a function to acquire a lock for a specific sync operation
+const acquireSyncLock = async (userId: number, syncType: string): Promise<boolean> => {
+  try {
+    // Use a unique lock key for each user and sync type
+    const lockKey = `sync:${syncType}:${userId}`;
+
+    // Try to acquire a lock using an advisory lock
+    const result = await db.execute(sql`SELECT pg_try_advisory_lock(hashtext(${lockKey}))`);
+
+    // PostgreSQL returns a boolean true for acquired, false for not acquired
+    const lockAcquired = result.rows[0]?.pg_try_advisory_lock === true;
+
+    if (lockAcquired) {
+      logger.info(`Acquired lock for ${syncType} sync of user ${userId}`);
+    } else {
+      logger.info(`Lock already held for ${syncType} sync of user ${userId}, skipping`);
+    }
+
+    return lockAcquired;
+  } catch (error) {
+    logger.error(`Error acquiring lock for ${syncType} sync of user ${userId}:`, error);
+    return false;
+  }
+};
+
+// Add a function to release the lock
+const releaseSyncLock = async (userId: number, syncType: string): Promise<void> => {
+  try {
+    const lockKey = `sync:${syncType}:${userId}`;
+
+    await db.execute(sql`SELECT pg_advisory_unlock(hashtext(${lockKey}))`);
+
+    logger.info(`Released lock for ${syncType} sync of user ${userId}`);
+  } catch (error) {
+    logger.error(`Error releasing lock for ${syncType} sync of user ${userId}:`, error);
+  }
+};
+
 const bulkInsertFollowers = async (userId: number, followers: HelixChannelFollower[]) => {
   try {
     const uniqueFollowers = Object.values(
@@ -160,6 +198,13 @@ const bulkInsertModerators = async (userId: number, moderators: HelixModerator[]
 };
 
 export const syncFollowers = async (userId: number) => {
+  // Try to acquire a lock
+  const lockAcquired = await acquireSyncLock(userId, 'followers');
+  if (!lockAcquired) {
+    // Another instance is already processing this user's followers
+    return;
+  }
+
   try {
     // Check if user is soft deleted
     const user = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
@@ -197,10 +242,20 @@ export const syncFollowers = async (userId: number) => {
     }
   } catch (error) {
     console.error(`Failed to sync followers for user ${userId}:`, error);
+  } finally {
+    // Always release the lock when done
+    await releaseSyncLock(userId, 'followers');
   }
 };
 
 export const syncAllSubscribers = async (userId: number) => {
+  // Try to acquire a lock
+  const lockAcquired = await acquireSyncLock(userId, 'subscribers');
+  if (!lockAcquired) {
+    // Another instance is already processing this user's subscribers
+    return;
+  }
+
   try {
     // Check if user is soft deleted
     const user = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
@@ -237,10 +292,20 @@ export const syncAllSubscribers = async (userId: number) => {
     }
   } catch (error) {
     console.error(`Failed to sync subscribers for user ${userId}:`, error);
+  } finally {
+    // Always release the lock when done
+    await releaseSyncLock(userId, 'subscribers');
   }
 };
 
 export const syncAllVips = async (userId: number) => {
+  // Try to acquire a lock
+  const lockAcquired = await acquireSyncLock(userId, 'vips');
+  if (!lockAcquired) {
+    // Another instance is already processing this user's VIPs
+    return;
+  }
+
   try {
     // Check if user is soft deleted
     const user = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
@@ -277,10 +342,20 @@ export const syncAllVips = async (userId: number) => {
     }
   } catch (error) {
     console.error(`Failed to sync vips for user ${userId}:`, error);
+  } finally {
+    // Always release the lock when done
+    await releaseSyncLock(userId, 'vips');
   }
 };
 
 export const syncAllModerators = async (userId: number) => {
+  // Try to acquire a lock
+  const lockAcquired = await acquireSyncLock(userId, 'moderators');
+  if (!lockAcquired) {
+    // Another instance is already processing this user's moderators
+    return;
+  }
+
   try {
     // Check if user is soft deleted
     const user = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
@@ -317,5 +392,8 @@ export const syncAllModerators = async (userId: number) => {
     }
   } catch (error) {
     console.error(`Failed to sync moderators for user ${userId}:`, error);
+  } finally {
+    // Always release the lock when done
+    await releaseSyncLock(userId, 'moderators');
   }
 };
