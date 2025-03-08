@@ -2,6 +2,7 @@ import env from '@/env';
 import { syncAllModerators, syncAllSubscribers, syncAllVips, syncFollowers } from '@/jobs/sync';
 import Queue from 'bee-queue';
 import { Cron } from 'croner';
+import { eq } from 'drizzle-orm';
 import { Logger } from 'tslog';
 import db from './db';
 import { usersTable } from './db/schema';
@@ -30,24 +31,36 @@ void synchronizationQueue.process(async (job) => {
 });
 
 synchronizationQueue.on('error', (error) => {
-  logger.error('Queue error:', error);
+  console.error('Queue error:', error);
 });
 
 synchronizationQueue.on('failed', (job, error) => {
-  logger.error(`Job ${job.id} failed:`, error);
+  console.error(`Job ${job.id} failed:`, error);
 });
 
 export const queueSyncJob = async ({ userId, delay }: SyncFollowersJob & { delay?: number }) => {
-  logger.info(`Queueing job for ${userId} (delay: ${delay})`);
-  const job = synchronizationQueue.createJob({ userId });
-  const delayUntil = delay ? new Date(Date.now() + delay) : undefined;
+  try {
+    // Check if user is soft deleted
+    const user = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
 
-  if (delayUntil) {
-    logger.debug(`Delaying job for ${delayUntil}`);
-    job.delayUntil(delayUntil);
+    if (user.length === 0) {
+      logger.warn(`User ${userId} not found, skipping sync job`);
+      return;
+    }
+
+    if (user[0].deletedAt) {
+      logger.info(`User ${userId} is soft deleted, skipping sync job`);
+      return;
+    }
+
+    const job = await synchronizationQueue.createJob({ userId }).save();
+    if (delay) {
+      job.delayUntil(Date.now() + delay);
+    }
+    logger.info(`Queued sync job for user ${userId}`);
+  } catch (error) {
+    console.error('Failed to queue sync job', error);
   }
-
-  return job.retries(2).timeout(120_000).save();
 };
 
 // Run every 15 min

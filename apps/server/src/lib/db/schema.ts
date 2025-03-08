@@ -7,6 +7,7 @@ export const usersTable = pgTable('users', {
   twitchAccessToken: varchar({ length: 255 }).notNull(),
   createdAt: timestamp().notNull().defaultNow(),
   updatedAt: timestamp().notNull().defaultNow(),
+  deletedAt: timestamp('deletedAt'),
 });
 
 export type User = typeof usersTable.$inferSelect;

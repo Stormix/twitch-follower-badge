@@ -25,7 +25,7 @@ const api = new Hono<ApiContext>()
       const payload = c.get('jwtPayload') as JwtPayload;
       logger.info('Refresh request received');
       if (!payload) {
-        logger.error('Refresh request received but invalid payload');
+        console.error('Refresh request received but invalid payload');
         return c.json({ error: 'Unauthorized' }, 401);
       }
       const tokens = await userService.refreshToken(payload);

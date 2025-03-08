@@ -4,6 +4,14 @@ import { ApiClient, HelixUser } from '@twurple/api';
 import { StaticAuthProvider } from '@twurple/auth';
 import userService from './user';
 
+const handleError = async (error: unknown, userId: number) => {
+  console.error(error);
+  if (error instanceof Error && error.message.includes('Invalid token supplied')) {
+    logger.info('Token removed for user', userId);
+    await userService.removeUser(userId);
+  }
+};
+
 export class TwitchService {
   private logger: Logger;
   private cachedClients: Map<number, ApiClient>;
@@ -59,7 +67,7 @@ export class TwitchService {
         yield follower;
       }
     } catch (error) {
-      this.logger.error(error);
+      await handleError(error, userId);
     }
   }
 
@@ -72,7 +80,7 @@ export class TwitchService {
         yield vip;
       }
     } catch (error) {
-      this.logger.error(error);
+      handleError(error, userId);
     }
   }
 
@@ -85,7 +93,7 @@ export class TwitchService {
         yield moderator;
       }
     } catch (error) {
-      this.logger.error(error);
+      await handleError(error, userId);
     }
   }
 
@@ -98,7 +106,7 @@ export class TwitchService {
         yield subscriber;
       }
     } catch (error) {
-      this.logger.error(error);
+      await handleError(error, userId);
     }
   }
 

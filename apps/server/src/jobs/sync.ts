@@ -1,9 +1,9 @@
 import db from '@/lib/db';
-import { followersTable, moderatorsTable, subscribersTable, vipsTable } from '@/lib/db/schema';
+import { followersTable, moderatorsTable, subscribersTable, usersTable, vipsTable } from '@/lib/db/schema';
 import mainLogger from '@/lib/logger';
 import { getService } from '@/utils/services';
 import type { HelixChannelFollower, HelixModerator, HelixSubscription, HelixUserRelation } from '@twurple/api';
-import { sql } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import batch from 'it-batch';
 import { TwitchService } from '../services/twitch';
 
@@ -53,7 +53,7 @@ const bulkInsertFollowers = async (userId: number, followers: HelixChannelFollow
         },
       });
   } catch (error) {
-    logger.error(`Failed to bulk insert followers for user ${userId}:`, error);
+    console.error(`Failed to bulk insert followers for user ${userId}:`, error);
   }
 };
 
@@ -99,7 +99,7 @@ const bulkInsertSubscribers = async (userId: number, subscribers: HelixSubscript
         },
       });
   } catch (error) {
-    logger.error(`Failed to bulk insert subscribers for user ${userId}:`, error);
+    console.error(`Failed to bulk insert subscribers for user ${userId}:`, error);
   }
 };
 
@@ -145,7 +145,7 @@ const bulkInsertVips = async (userId: number, vips: HelixUserRelation[]) => {
         },
       });
   } catch (error) {
-    logger.error(`Failed to bulk insert vips for user ${userId}:`, error);
+    console.error(`Failed to bulk insert vips for user ${userId}:`, error);
   }
 };
 
@@ -191,55 +191,127 @@ const bulkInsertModerators = async (userId: number, moderators: HelixModerator[]
         },
       });
   } catch (error) {
-    logger.error(`Failed to bulk insert moderators for user ${userId}:`, error);
+    console.error(`Failed to bulk insert moderators for user ${userId}:`, error);
   }
 };
 
 export const syncFollowers = async (userId: number) => {
-  const twitchService = getService(TwitchService);
-  const followersCount = await twitchService.getFollowersCount(userId);
-  const batches = batch(twitchService.getFollowers(userId), 100);
+  try {
+    // Check if user is soft deleted
+    const user = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
 
-  let upserted = 0;
-  for await (const batch of batches) {
-    await bulkInsertFollowers(userId, batch);
-    upserted += batch.length;
-    logger.info(`Upserted ${upserted}/${followersCount} followers for user ${userId}`);
+    if (user.length === 0) {
+      logger.warn(`User ${userId} not found, skipping follower sync`);
+      return;
+    }
+
+    if (user[0].deletedAt) {
+      logger.info(`User ${userId} is soft deleted, skipping follower sync`);
+      return;
+    }
+
+    logger.info(`Starting follower sync for user ${userId}`);
+    const twitchService = getService(TwitchService);
+    const followersCount = await twitchService.getFollowersCount(userId);
+    const batches = batch(twitchService.getFollowers(userId), 100);
+
+    let upserted = 0;
+    for await (const batch of batches) {
+      await bulkInsertFollowers(userId, batch);
+      upserted += batch.length;
+      logger.info(`Upserted ${upserted}/${followersCount} followers for user ${userId}`);
+    }
+  } catch (error) {
+    console.error(`Failed to sync followers for user ${userId}:`, error);
   }
 };
 
 export const syncAllSubscribers = async (userId: number) => {
-  const twitchService = getService(TwitchService);
-  const batches = batch(twitchService.getSubscribers(userId), 100);
+  try {
+    // Check if user is soft deleted
+    const user = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
 
-  let upserted = 0;
-  for await (const batch of batches) {
-    await bulkInsertSubscribers(userId, batch);
-    upserted += batch.length;
-    logger.info(`Upserted ${upserted} subscribers for user ${userId}`);
+    if (user.length === 0) {
+      logger.warn(`User ${userId} not found, skipping subscriber sync`);
+      return;
+    }
+
+    if (user[0].deletedAt) {
+      logger.info(`User ${userId} is soft deleted, skipping subscriber sync`);
+      return;
+    }
+
+    logger.info(`Starting subscriber sync for user ${userId}`);
+    const twitchService = getService(TwitchService);
+    const batches = batch(twitchService.getSubscribers(userId), 100);
+
+    let upserted = 0;
+    for await (const batch of batches) {
+      await bulkInsertSubscribers(userId, batch);
+      upserted += batch.length;
+      logger.info(`Upserted ${upserted} subscribers for user ${userId}`);
+    }
+  } catch (error) {
+    console.error(`Failed to sync subscribers for user ${userId}:`, error);
   }
 };
 
 export const syncAllVips = async (userId: number) => {
-  const twitchService = getService(TwitchService);
-  const batches = batch(twitchService.getVIPs(userId), 100);
+  try {
+    // Check if user is soft deleted
+    const user = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
 
-  let upserted = 0;
-  for await (const batch of batches) {
-    await bulkInsertVips(userId, batch);
-    upserted += batch.length;
-    logger.info(`Upserted ${upserted} vips for user ${userId}`);
+    if (user.length === 0) {
+      logger.warn(`User ${userId} not found, skipping VIP sync`);
+      return;
+    }
+
+    if (user[0].deletedAt) {
+      logger.info(`User ${userId} is soft deleted, skipping VIP sync`);
+      return;
+    }
+
+    logger.info(`Starting VIP sync for user ${userId}`);
+    const twitchService = getService(TwitchService);
+    const batches = batch(twitchService.getVIPs(userId), 100);
+
+    let upserted = 0;
+    for await (const batch of batches) {
+      await bulkInsertVips(userId, batch);
+      upserted += batch.length;
+      logger.info(`Upserted ${upserted} vips for user ${userId}`);
+    }
+  } catch (error) {
+    console.error(`Failed to sync vips for user ${userId}:`, error);
   }
 };
 
 export const syncAllModerators = async (userId: number) => {
-  const twitchService = getService(TwitchService);
-  const batches = batch(twitchService.getModerators(userId), 100);
+  try {
+    // Check if user is soft deleted
+    const user = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
 
-  let upserted = 0;
-  for await (const batch of batches) {
-    await bulkInsertModerators(userId, batch);
-    upserted += batch.length;
-    logger.info(`Upserted ${upserted} moderators for user ${userId}`);
+    if (user.length === 0) {
+      logger.warn(`User ${userId} not found, skipping moderator sync`);
+      return;
+    }
+
+    if (user[0].deletedAt) {
+      logger.info(`User ${userId} is soft deleted, skipping moderator sync`);
+      return;
+    }
+
+    logger.info(`Starting moderator sync for user ${userId}`);
+    const twitchService = getService(TwitchService);
+    const batches = batch(twitchService.getModerators(userId), 100);
+
+    let upserted = 0;
+    for await (const batch of batches) {
+      await bulkInsertModerators(userId, batch);
+      upserted += batch.length;
+      logger.info(`Upserted ${upserted} moderators for user ${userId}`);
+    }
+  } catch (error) {
+    console.error(`Failed to sync moderators for user ${userId}:`, error);
   }
 };

@@ -1,6 +1,7 @@
 import env from '@/env';
 import db from '@/lib/db';
 import { followersTable, moderatorsTable, subscribersTable, usersTable, vipsTable, type User } from '@/lib/db/schema';
+import logger from '@/lib/logger';
 import { queueSyncJob } from '@/lib/queues';
 import type { CheckFollower, UserLogin } from '@/lib/validation';
 import type { JwtPayload, JwtPayloadJSON } from '@/types/jwt';
@@ -54,6 +55,7 @@ export class UserService {
         .set({
           twitchAccessToken: login.accessToken,
           updatedAt: new Date(),
+          deletedAt: null,
         })
         .where(eq(usersTable.twitchId, login.userId))
         .returning();
@@ -108,6 +110,11 @@ export class UserService {
 
     if (user.length === 0) {
       throw new Error('User not found');
+    }
+
+    // Check if user is soft deleted
+    if (user[0].deletedAt) {
+      throw new Error('User has been removed. Please re-authenticate.');
     }
 
     return user[0];
@@ -216,6 +223,27 @@ export class UserService {
         isModerator: false,
         followingSince: new Date(),
       };
+    }
+  }
+
+  /**
+   * Soft deletes a user by setting the deletedAt field
+   * This will cause the user to be skipped during syncs and force them to re-authenticate
+   */
+  async removeUser(userId: number): Promise<void> {
+    try {
+      await db
+        .update(usersTable)
+        .set({
+          deletedAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .where(eq(usersTable.id, userId));
+
+      logger.info(`User ${userId} has been soft deleted`);
+    } catch (error) {
+      console.error(`Failed to remove user ${userId}:`, error);
+      throw new Error(`Failed to remove user: ${(error as Error).message}`);
     }
   }
 }
