@@ -3,7 +3,7 @@ import { followersTable, moderatorsTable, subscribersTable, usersTable, vipsTabl
 import mainLogger from '@/lib/logger';
 import { getService } from '@/utils/services';
 import type { HelixChannelFollower, HelixModerator, HelixSubscription, HelixUserRelation } from '@twurple/api';
-import { eq, sql } from 'drizzle-orm';
+import { and, eq, isNull, sql } from 'drizzle-orm';
 import batch from 'it-batch';
 import { TwitchService } from '../services/twitch';
 
@@ -20,15 +20,6 @@ const bulkInsertFollowers = async (userId: number, followers: HelixChannelFollow
         {} as Record<string, HelixChannelFollower>,
       ),
     );
-
-    // First, mark all existing followers as unfollowed
-    await db
-      .update(followersTable)
-      .set({
-        unfollowedAt: new Date(),
-        updatedAt: new Date(),
-      })
-      .where(sql`${followersTable.userId} = ${userId} AND ${followersTable.unfollowedAt} IS NULL`);
 
     // Then insert/update current followers
     await db
@@ -69,15 +60,6 @@ const bulkInsertSubscribers = async (userId: number, subscribers: HelixSubscript
       ),
     );
 
-    // Mark all existing subscribers as unsubscribed
-    await db
-      .update(subscribersTable)
-      .set({
-        unsubscribedAt: new Date(),
-        updatedAt: new Date(),
-      })
-      .where(sql`${subscribersTable.userId} = ${userId} AND ${subscribersTable.unsubscribedAt} IS NULL`);
-
     // Insert/update current subscribers
     await db
       .insert(subscribersTable)
@@ -115,15 +97,6 @@ const bulkInsertVips = async (userId: number, vips: HelixUserRelation[]) => {
       ),
     );
 
-    // Mark all existing VIPs as removed
-    await db
-      .update(vipsTable)
-      .set({
-        removedAt: new Date(),
-        updatedAt: new Date(),
-      })
-      .where(sql`${vipsTable.userId} = ${userId} AND ${vipsTable.removedAt} IS NULL`);
-
     // Insert/update current VIPs
     await db
       .insert(vipsTable)
@@ -160,15 +133,6 @@ const bulkInsertModerators = async (userId: number, moderators: HelixModerator[]
         {} as Record<string, HelixModerator>,
       ),
     );
-
-    // Mark all existing moderators as removed
-    await db
-      .update(moderatorsTable)
-      .set({
-        removedAt: new Date(),
-        updatedAt: new Date(),
-      })
-      .where(sql`${moderatorsTable.userId} = ${userId} AND ${moderatorsTable.removedAt} IS NULL`);
 
     // Insert/update current moderators
     await db
@@ -213,6 +177,16 @@ export const syncFollowers = async (userId: number) => {
     logger.info(`Starting follower sync for user ${userId}`);
     const twitchService = getService(TwitchService);
     const followersCount = await twitchService.getFollowersCount(userId);
+
+    // Mark all existing followers as unfollowed ONCE at the beginning
+    await db
+      .update(followersTable)
+      .set({
+        unfollowedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(and(eq(followersTable.userId, userId), isNull(followersTable.unfollowedAt)));
+
     const batches = batch(twitchService.getFollowers(userId), 100);
 
     let upserted = 0;
@@ -243,6 +217,16 @@ export const syncAllSubscribers = async (userId: number) => {
 
     logger.info(`Starting subscriber sync for user ${userId}`);
     const twitchService = getService(TwitchService);
+
+    // Mark all existing subscribers as unsubscribed ONCE at the beginning
+    await db
+      .update(subscribersTable)
+      .set({
+        unsubscribedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(and(eq(subscribersTable.userId, userId), isNull(subscribersTable.unsubscribedAt)));
+
     const batches = batch(twitchService.getSubscribers(userId), 100);
 
     let upserted = 0;
@@ -273,6 +257,16 @@ export const syncAllVips = async (userId: number) => {
 
     logger.info(`Starting VIP sync for user ${userId}`);
     const twitchService = getService(TwitchService);
+
+    // Mark all existing VIPs as removed ONCE at the beginning
+    await db
+      .update(vipsTable)
+      .set({
+        removedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(and(eq(vipsTable.userId, userId), isNull(vipsTable.removedAt)));
+
     const batches = batch(twitchService.getVIPs(userId), 100);
 
     let upserted = 0;
@@ -303,6 +297,16 @@ export const syncAllModerators = async (userId: number) => {
 
     logger.info(`Starting moderator sync for user ${userId}`);
     const twitchService = getService(TwitchService);
+
+    // Mark all existing moderators as removed ONCE at the beginning
+    await db
+      .update(moderatorsTable)
+      .set({
+        removedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(and(eq(moderatorsTable.userId, userId), isNull(moderatorsTable.removedAt)));
+
     const batches = batch(twitchService.getModerators(userId), 100);
 
     let upserted = 0;
