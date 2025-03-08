@@ -4,11 +4,9 @@ import cssText from "data-text:@/style.css"
 import type { PlasmoCSConfig, PlasmoGetInlineAnchorList } from "plasmo"
 import { useMemo } from "react"
 
-const selectedUser: string | null = null
-
 export const getInlineAnchorList: PlasmoGetInlineAnchorList = async () => {
   const anchors = document.querySelectorAll(
-    "a.preview-card-channel-link > div p"
+    "a.preview-card-channel-link > div > p"
   )
   return Array.from(anchors).map((anchor) => ({
     element: anchor,
@@ -29,7 +27,7 @@ export const config: PlasmoCSConfig = {
 
 export default function CardInfo({ anchor }) {
   const name = useMemo(() => {
-    const element = anchor.element as HTMLAnchorElement
+    const element = anchor.element.querySelector("p") as HTMLParagraphElement
     const rawName = element?.textContent?.trim()?.toLowerCase() || ""
     // Extract the first part of the username if it contains spaces
     return rawName.split(" ")[0]
